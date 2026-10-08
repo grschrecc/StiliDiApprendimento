@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Questionario sugli Stili di Apprendimento - Congresso Pubbliche Assistenze</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --accent: #3498db;
+            --bg: #f8f9fa;
+            --card: #ffffff;
+            --text: #333333;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: var(--card);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            color: var(--primary);
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #2c3e50;
+            font-weight: 600;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+            background-color: #eef7fc;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 5px solid var(--accent);
+        }
+
+        .scale-info {
+            background-color: #f1f5f9;
+            border: 1px solid #cbd5e1;
+            padding: 12px 15px;
+            margin-bottom: 25px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .question-card {
+            background: #fff;
+            border: 1px solid #e1e8ed;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            transition: border-color 0.2s;
+        }
+
+        .question-card:hover {
+            border-color: var(--accent);
+        }
+
+        .question-text {
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .options {
+            display: flex;
+            gap: 10px;
+            justify-content: space-between;
+        }
+
+        .option-label {
+            flex: 1;
+            text-align: center;
+            padding: 8px;
+            background: #f1f3f5;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9em;
+            user-select: none;
+            transition: all 0.2s;
+        }
+
+        .option-label input {
+            display: none;
+        }
+
+        .option-label:hover {
+            background: #e2e8f0;
+        }
+
+        .option-label.selected {
+            background: var(--accent);
+            color: white;
+            font-weight: bold;
+        }
+
+        button.btn-submit {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            background-color: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 30px;
+            transition: background 0.3s;
+        }
+
+        button.btn-submit:hover {
+            background-color: #2980b9;
+        }
+
+        #results {
+            display: none;
+            margin-top: 30px;
+        }
+
+        .area-result {
+            background: #f8fafc;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+
+        .area-title {
+            color: var(--primary);
+            border-bottom: 2px solid var(--accent);
+            padding-bottom: 5px;
+            margin-top: 0;
+        }
+
+        .style-highlight {
+            color: #2c3e50;
+            background: #e2e8f0;
+            padding: 3px 8px;
+            border-radius: 4px;
+        }
+
+        .percentage-bar-bg {
+            background: #e2e8f0;
+            height: 12px;
+            border-radius: 6px;
+            overflow: hidden;
+            margin: 8px 0 15px 0;
+        }
+
+        .percentage-bar-fill {
+            background: var(--accent);
+            height: 100%;
+            width: 0%;
+            transition: width 0.5s ease-in-out;
+        }
+
+        .strategy-list {
+            padding-left: 20px;
+        }
+
+        .strategy-list li {
+            margin-bottom: 6px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Questionario sugli Stili di Apprendimento</h1>
+    <div class="subtitle">
+        Il cambiamento parte dall'apprendimento, quindi è molto importante capire come si apprende; fai il test per scoprire il tuo stile di apprendimento prevalente.
+    </div>
+
+    <div id="quiz-container">
+        <div class="scale-info">
+            <strong>Scala di valutazione:</strong><br>
+            0 = Per niente | 1 = Poco | 2 = Abbastanza | 3 = Molto
+        </div>
+
+        <form id="quiz-form">
+            <div id="questions-list"></div>
+            <button type="button" class="btn-submit" onclick="calculateResults()">Calcola il tuo Stile di Apprendimento</button>
+        </form>
+    </div>
+
+    <div id="results">
+        <h2>I Tuoi Risultati</h2>
+        <p>I modi di imparare ed elaborare nuove informazioni variano da persona a persona. Di seguito trovi l'analisi del tuo stile prevalente per ciascuna area con la relativa descrizione e le strategie consigliare.</p>
+        
+        <div id="area-a-result" class="area-result"></div>
+        <div id="area-b-result" class="area-result"></div>
+        <div id="area-c-result" class="area-result"></div>
+
+        <button type="button" class="btn-submit" onclick="window.scrollTo({top: 0, behavior: 'smooth'}); location.reload();">Rifai il Test</button>
+    </div>
+</div>
+
+<script>
+const questions = [
+    { id: 1, text: "Quando studio o approfondisco un argomento, se sottolineo o evidenzio parole e frasi mi concentro di più." },
+    { id: 2, text: "Mi piace lavorare senza pianificare tutto all'inizio, ma 'aggiustando il tiro' man mano che procedo." },
+    { id: 3, text: "Preferisco che mi vengano assegnati compiti su cui posso lavorare come preferisco, senza dover seguire troppe istruzioni operative." },
+    { id: 4, text: "Mi risulta difficile capire un termine o un concetto se non mi vengono dati degli esempi." },
+    { id: 5, text: "Mi confondono grafici e diagrammi che non sono accompagnati da spiegazioni scritte." },
+    { id: 6, text: "Preferisco i lavori da svolgere passo per passo, completando un compito prima di iniziare il successivo." },
+    { id: 7, text: "Ricordo meglio un argomento se posso fare un' 'esperienza diretta', per esempio facendo un esperimento pratico, costruendo un modello, facendo una ricerca, ecc." },
+    { id: 8, text: "Preferisco imparare leggendo un testo o un documento piuttosto che ascoltando una presentazione." },
+    { id: 9, text: "Sono soddisfatto se di un argomento capisco le idee generali, senza considerare i particolari." },
+    { id: 10, text: "Capisco meglio un argomento parlandone o discutendone con qualcuno piuttosto che soltanto leggendo un testo." },
+    { id: 11, text: "Mi piace lavorare in gruppo." },
+    { id: 12, text: "Quando approfondisco un argomento imparo di più guardando figure, grafici e mappe piuttosto che leggendo il testo scritto." },
+    { id: 13, text: "Se devo raccontare o riferire qualcosa mi soffermo molto sui dettagli." },
+    { id: 14, text: "Riesco facilmente a seguire qualcuno che parla anche se non lo guardo in faccia." },
+    { id: 15, text: "Capisco meglio le istruzioni di un compito se mi sono presentate per iscritto." },
+    { id: 16, text: "Se si deve lavorare a gruppi, preferisco che sia una figura esterna a decidere come formare i gruppi." },
+    { id: 17, text: "Durante un incontro o una discussione scrivere o disegnare qualcosa mi aiuta a concentrarmi." },
+    { id: 18, text: "Imparo e ricordo di più quando lavoro da solo." },
+    { id: 19, text: "In un lavoro di gruppo preferisco che il gruppo sia libero di distribuire i compiti all'interno del gruppo." },
+    { id: 20, text: "Organizzo il mio tempo, sia nell'apprendimento che nelle altre attività." },
+    { id: 21, text: "Quando leggo un testo mi creo mentalmente delle immagini sulla situazione, i contesti o le idee." },
+    { id: 22, text: "Quando studio o lavoro ho bisogno di pause frequenti e di movimento fisico." },
+    { id: 23, text: "Alla fine di un lavoro di gruppo mi sento di avere imparato di più che se avessi lavorato da solo." },
+    { id: 24, text: "Preferisco le attività con una sola soluzione o risposta definita piuttosto che le attività più 'aperte' e 'creative'." },
+    { id: 25, text: "Quando lavoro con un'altra persona o in gruppo ho la sensazione di perdere tempo." },
+    { id: 26, text: "Mi risulta più facile ricordare figure e illustrazioni in un documento se sono a colori vivaci." },
+    { id: 27, text: "Imparo meglio se parto da una visione generale dell'insieme piuttosto che da dettagli e aspetti specifici." },
+    { id: 28, text: "Preferisco che una regola, una linea guida o una teoria mi venga chiaramente spiegata prima di applicarla in esempi pratici." },
+    { id: 29, text: "Per capire un testo che sto analizzando mi aiuto facendo disegni e diagrammi." },
+    { id: 30, text: "Imparo di più quando qualcuno spiega che studiando in autonomia e da solo." },
+    { id: 31, text: "Non mi piace leggere o ascoltare le istruzioni per un compito; preferirei cominciare subito a lavorarci." },
+    { id: 32, text: "Capisco meglio le istruzioni di un compito se mi vengono spiegate a voce e non soltanto fornite per iscritto." },
+    { id: 33, text: "Se un compito deve essere svolto a gruppi, preferisco che siano i partecipanti stessi a decidere come formare i gruppi." },
+    { id: 34, text: "Prendo appunti durante le spiegazioni e le discussioni e poi li rileggo poi per conto mio." },
+    { id: 35, text: "Mi risulta abbastanza facile sintetizzare ciò che è stato detto in una discussione." },
+    { id: 36, text: "Quando rielaboro informazioni mi concentro di più se leggo o ripeto a voce alta." },
+    { id: 37, text: "Imparo di più nel lavoro autonomo che durante le sessioni condivise." },
+    { id: 38, text: "Se devo decidere se qualcosa è giusto o corretto, mi baso più sull'istinto che sulla logica." },
+    { id: 39, text: "Preferisco imparare guardando un video o ascoltando un audio piuttosto che leggendo un testo." },
+    { id: 40, text: "Quando analizzo un documento prendo appunti o faccio riassunti." }
+];
+
+const profiles = {
+    visivoVerbale: {
+        title: "Stile Visivo Verbale",
+        desc: "Preferisci vedere ciò che devi imparare e basarti soprattutto sul linguaggio verbale: trovi utile leggere istruzioni, prendere nota, consultare prospetti scritti o analizzare relazioni e documenti[cite: 1].",
+        strat: [
+            "Prendi appunti durante incontri e riunioni e riorganizzali per iscritto[cite: 1].",
+            "Prima di analizzare un documento, leggi attentamente titoli, sottotitoli e sommari[cite: 1].",
+            "Sintetizza per iscritto quanto letto o ascoltato[cite: 1].",
+            "Evidenzia con sottolineature o parole chiave i punti salienti[cite: 1].",
+            "Accompagna grafici e diagrammi con brevi spiegazioni scritte[cite: 1]."
+        ]
+    },
+    visivoNonVerbale: {
+        title: "Stile Visivo Non-Verbale",
+        desc: "Preferisci elaborare le informazioni basandoti soprattutto sul linguaggio non verbale (diagrammi, grafici, schemi concettuali, mappe visuali, immagini)[cite: 1].",
+        strat: [
+            "Usa mappe concettuali, diagrammi e schemi per riassumere i temi complessi[cite: 1].",
+            "Utilizza un codice colore (evidenziatori) per organizzare appunti e documenti[cite: 1].",
+            "Osserva attentamente prospetti visuali o grafici prima di approfondire il testo scritto[cite: 1].",
+            "Ricorri a simboli e abbreviazioni visuali[cite: 1]."
+        ]
+    },
+    uditivo: {
+        title: "Stile Uditivo",
+        desc: "Preferisci apprendere attraverso l'ascolto e il confronto verbale: trovi efficace seguire presentazioni orali, partecipare a tavole rotonde e discutere i temi con altri[cite: 1].",
+        strat: [
+            "Confrontati a voce con colleghi e collaboratori su quanto ascoltato o letto[cite: 1].",
+            "Leggi o sintetizza i punti chiave a voce alta per fissare le idee[cite: 1].",
+            "Prediligi spiegazioni e briefing verbali[cite: 1].",
+            "Esponi oralmente la soluzione di un problema prima di formalizzarla per iscritto[cite: 1]."
+        ]
+    },
+    cinestetico: {
+        title: "Stile Cinestetico",
+        desc: "Preferisci svolgere attività concrete ed esperienziali: apprendi meglio quando puoi sperimentare direttamente, essere operativo e muoverti[cite: 1].",
+        strat: [
+            "Prendi appunti e annotazioni per mantenere attiva la concentrazione[cite: 1].",
+            "Alterna le sessioni di lavoro analitico a brevi pause operative e di movimento[cite: 1].",
+            "Suddividi i progetti complessi in sotto-attività pratiche e sequenziali[cite: 1].",
+            "Prediligi gruppi di lavoro dinamici e attività sul campo[cite: 1]."
+        ]
+    },
+    analitico: {
+        title: "Stile Analitico",
+        desc: "Preferisci affrontare i problemi scomponendoli nei dettagli e analizzandoli in modo sistematico, lineare e logico[cite: 1].",
+        strat: [
+            "Sfrutta la tua precisione e capacità di pianificazione dettagliata[cite: 1].",
+            "Sforzati di affiancare all'analisi dei dettagli anche una visione d'insieme dell'organizzazione[cite: 1].",
+            "Integra nei processi di scelta sia la logica sui dati sia le intuizioni generali[cite: 1]."
+        ]
+    },
+    globale: {
+        title: "Stile Globale",
+        desc: "Preferisci considerare i problemi e le opportunità nel loro complesso, puntando a una visione d'insieme sintetico e intuitiva[cite: 1].",
+        strat: [
+            "Sfrutta la tua visione strategica complessiva[cite: 1].",
+            "Pianifica scadenze e priorità operative per assicurare il presidio dei dettagli importanti[cite: 1].",
+            "Analizza accuratamente le informazioni chiave prima di prendere decisioni definitive[cite: 1]."
+        ]
+    },
+    individuale: {
+        title: "Stile Individuale",
+        desc: "Preferisci la riflessione e lo studio autonomo, elaborando concetti e decisioni in autonomia prima del confronto pubblico[cite: 1].",
+        strat: [
+            "Utilizza i momenti di lavoro condiviso per arricchire la tua prospettiva con quelle altrui[cite: 1].",
+            "Mantieni i tuoi spazi di elaborazione individuale prima o dopo le riunioni operative[cite: 1]."
+        ]
+    },
+    gruppo: {
+        title: "Stile di Gruppo",
+        desc: "Preferisci apprendere ed elaborare le decisioni lavorando con gli altri, attraverso la discussione e la condivisione in team[cite: 1].",
+        strat: [
+            "Valorizza il confronto in gruppo per generare idee nuove e condivise[cite: 1].",
+            "Reserve comunque del tempo individuale per rielaborare in autonomia le sintesi di gruppo[cite: 1]."
+        ]
+    }
+};
+
+// Generazione Domande DOM
+const container = document.getElementById('questions-list');
+questions.forEach(q => {
+    const card = document.createElement('div');
+    card.className = 'question-card';
+    card.innerHTML = `
+        <div class="question-text">${q.id}. ${q.text}</div>
+        <div class="options">
+            ${[0,1,2,3].map(val => `
+                <label class="option-label" onclick="selectOption(this, ${q.id})">
+                    <input type="radio" name="q${q.id}" value="${val}" required>
+                    ${val}
+                </label>
+            `).join('')}
+        </div>
+    `;
+    container.appendChild(card);
+});
+
+function selectOption(label, questionId) {
+    const parent = label.parentElement;
+    parent.querySelectorAll('.option-label').forEach(l => l.classList.remove('selected'));
+    label.classList.add('selected');
+}
+
+function calculateResults() {
+    const form = document.getElementById('quiz-form');
+    const formData = new FormData(form);
+    
+    // Verifica risposte
+    for(let i = 1; i <= 40; i++) {
+        if(!formData.has(`q${i}`)) {
+            alert(`Per favore rispondi a tutte le affermazioni per proseguire. Manca la numero ${i}.`);
+            return;
+        }
+    }
+
+    const getVal = id => parseInt(formData.get(`q${id}`)) || 0;
+
+    // Calcoli Area A[cite: 1]
+    const visVerbale = getVal(5) + getVal(8) + getVal(15) + getVal(34) + getVal(40);
+    const visNonVerbale = getVal(4) + getVal(12) + getVal(21) + getVal(26) + getVal(29);
+    const uditivo = getVal(10) + getVal(14) + getVal(32) + getVal(36) + getVal(39);
+    const cinestetico = getVal(1) + getVal(7) + getVal(17) + getVal(22) + getVal(31);
+    const totA = visVerbale + visNonVerbale + uditivo + cinestetico || 1;
+
+    // Calcoli Area B[cite: 1]
+    const analitico = getVal(6) + getVal(13) + getVal(20) + getVal(24) + getVal(28);
+    const globale = getVal(2) + getVal(9) + getVal(27) + getVal(35) + getVal(38);
+    const totB = analitico + globale || 1;
+
+    // Calcoli Area C[cite: 1]
+    const individuale = getVal(3) + getVal(16) + getVal(18) + getVal(25) + getVal(37);
+    const gruppo = getVal(11) + getVal(19) + getVal(23) + getVal(30) + getVal(33);
+    const totC = individuale + gruppo || 1;
+
+    // Determinazione Prevalenze
+    const areaA_scores = [
+        { key: 'visivoVerbale', score: visVerbale, pct: Math.round((visVerbale/totA)*100) },
+        { key: 'visivoNonVerbale', score: visNonVerbale, pct: Math.round((visNonVerbale/totA)*100) },
+        { key: 'uditivo', score: uditivo, pct: Math.round((uditivo/totA)*100) },
+        { key: 'cinestetico', score: cinestetico, pct: Math.round((cinestetico/totA)*100) }
+    ].sort((a,b) => b.score - a.score);
+
+    const areaB_scores = [
+        { key: 'analitico', score: analitico, pct: Math.round((analitico/totB)*100) },
+        { key: 'globale', score: globale, pct: Math.round((globale/totB)*100) }
+    ].sort((a,b) => b.score - a.score);
+
+    const areaC_scores = [
+        { key: 'individuale', score: individuale, pct: Math.round((individuale/totC)*100) },
+        { key: 'gruppo', score: gruppo, pct: Math.round((gruppo/totC)*100) }
+    ].sort((a,b) => b.score - a.score);
+
+    // Rendering Risultati
+    renderAreaResult('area-a-result', 'AREA A: Canali Sensoriali Preferiti', areaA_scores[0], areaA_scores);
+    renderAreaResult('area-b-result', 'AREA B: Modalità di Elaborazione Informazioni', areaB_scores[0], areaB_scores);
+    renderAreaResult('area-c-result', 'AREA C: Modalità di Lavoro e Relazione', areaC_scores[0], areaC_scores);
+
+    document.getElementById('quiz-container').style.display = 'none';
+    document.getElementById('results').style.display = 'block';
+    window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+function renderAreaResult(elementId, title, winner, allScores) {
+    const prof = profiles[winner.key];
+    const html = `
+        <h3 class="area-title">${title}</h3>
+        <p>Stile Prevalente: <strong class="style-highlight">${prof.title} (${winner.pct}%)</strong></p>
+        
+        ${allScores.map(s => `
+            <div style="font-size:0.85em; margin-top:5px;">${profiles[s.key].title}:${s.pct}%</div>
+            <div class="percentage-bar-bg">
+                <div class="percentage-bar-fill" style="width: ${s.pct}%"></div>
+            </div>
+        `).join('')}
+
+        <p><strong>Descrizione:</strong> ${prof.desc}</p>
+        <strong>Strategie Suggerite:</strong>
+        <ul class="strategy-list">
+            ${prof.strat.map(st => `<li>${st}</li>`).join('')}
+        </ul>
+    `;
+    document.getElementById(elementId).innerHTML = html;
+}
+</script>
+</body>
+</html>
